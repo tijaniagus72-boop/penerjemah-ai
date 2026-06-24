@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- Tambahan Library Transliterasi Pinyin (Mandarin) -->
+    <script src="https://unpkg.com/pinyin-pro"></script>
+
     <style>
         :root {
             --primary: #6366f1;
@@ -35,7 +38,6 @@
             color: var(--text-dark);
         }
 
-        /* Container Glassmorphism */
         .app-container {
             width: 100%;
             max-width: 900px;
@@ -57,7 +59,6 @@
             }
         }
 
-        /* Header Modern */
         header {
             padding: 24px 30px;
             display: flex;
@@ -84,7 +85,6 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* Language Selector Custom */
         .lang-select-wrapper {
             background: white;
             padding: 4px 12px;
@@ -103,7 +103,6 @@
             cursor: pointer;
         }
 
-        /* Chat Area */
         #chatBox {
             flex: 1;
             overflow-y: auto;
@@ -111,43 +110,20 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            scrollbar-width: thin;
         }
 
-        #chatBox::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        #chatBox::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 10px;
-        }
-
-        /* Bubble Styles */
         .msg-wrapper {
             max-width: 80%;
             animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .msg-id {
-            align-self: flex-start;
-        }
-
-        .msg-foreign {
-            align-self: flex-end;
-        }
+        .msg-id { align-self: flex-start; }
+        .msg-foreign { align-self: flex-end; }
 
         .bubble {
             padding: 16px 20px;
@@ -180,9 +156,23 @@
         }
 
         .text-tran {
-            font-size: 1.05rem;
-            font-weight: 500;
-            line-height: 1.5;
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            display: block;
+        }
+
+        /* STYLE BARU: Transliterasi */
+        .text-translit {
+            font-size: 0.85rem;
+            font-style: italic;
+            display: block;
+            margin-top: 4px;
+            opacity: 0.9;
+            color: #fcd34d; /* Warna kuning muda agar kontras di bubble biru */
+        }
+        .msg-id .text-translit {
+            color: var(--primary); /* Warna ungu untuk bubble putih */
         }
 
         .btn-replay {
@@ -206,7 +196,6 @@
             color: white;
         }
 
-        /* Control Panel */
         .control-panel {
             background: white;
             padding: 30px;
@@ -234,11 +223,7 @@
             animation: blink 1s infinite;
         }
 
-        @keyframes blink {
-            50% {
-                opacity: 0.3;
-            }
-        }
+        @keyframes blink { 50% { opacity: 0.3; } }
 
         .status-text {
             font-size: 0.75rem;
@@ -248,7 +233,6 @@
             letter-spacing: 2px;
         }
 
-        /* Mic Buttons */
         .mic-actions {
             display: flex;
             justify-content: center;
@@ -276,20 +260,8 @@
             cursor: pointer;
         }
 
-        .btn-id {
-            background: #f1f5f9;
-            color: var(--primary);
-        }
-
-        .btn-foreign {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-mic:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-        }
+        .btn-id { background: #f1f5f9; color: var(--primary); }
+        .btn-foreign { background: var(--primary); color: white; }
 
         .btn-mic.is-recording {
             background: #ef4444 !important;
@@ -297,7 +269,6 @@
             transform: scale(1.1);
         }
 
-        /* Wave Animation */
         .wave {
             position: absolute;
             width: 100%;
@@ -308,20 +279,11 @@
             pointer-events: none;
         }
 
-        .is-recording .wave {
-            animation: wavePulse 1.5s infinite;
-        }
+        .is-recording .wave { animation: wavePulse 1.5s infinite; }
 
         @keyframes wavePulse {
-            0% {
-                transform: scale(1);
-                opacity: 0.8;
-            }
-
-            100% {
-                transform: scale(2);
-                opacity: 0;
-            }
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; }
         }
 
         .label-lang {
@@ -346,28 +308,18 @@
                     <optgroup label="Paling Sering">
                         <option value="zh-CN" selected>🇨🇳 Mandarin</option>
                         <option value="en-US">🇺🇸 English</option>
-                        <option value="ar-SA">🇸🇦 Arabic</option>
                         <option value="ja-JP">🇯🇵 Japanese</option>
                         <option value="ko-KR">🇰🇷 Korean</option>
                     </optgroup>
-                    <optgroup label="Asia">
+                    <optgroup label="Lainnya">
+                        <option value="ar-SA">🇸🇦 Arabic</option>
                         <option value="th-TH">🇹🇭 Thai</option>
-                        <option value="vi-VN">🇻🇳 Vietnamese</option>
-                        <option value="hi-IN">🇮🇳 Hindi</option>
                     </optgroup>
                 </select>
             </div>
         </header>
 
-        <div id="chatBox">
-            <!-- Contoh Welcome Message -->
-            <div class="msg-wrapper msg-id">
-                <div class="bubble">
-                    <span class="text-orig">System</span>
-                    <span class="text-tran">Halo! Tekan tombol mikrofon di bawah untuk mulai menerjemahkan secara real-time.</span>
-                </div>
-            </div>
-        </div>
+        <div id="chatBox"></div>
 
         <div class="control-panel">
             <div id="statusWrapper" class="status-container">
@@ -402,29 +354,17 @@
         const status = document.getElementById('status');
         const statusWrapper = document.getElementById('statusWrapper');
 
-        // FIX 1: Inisialisasi SpeechSynthesis untuk Mobile
         let synth = window.speechSynthesis;
         let voices = [];
 
-        // Fungsi untuk "memancing" suara agar aktif di HP
         function unlockAudio() {
-            const msg = new SpeechSynthesisUtterance(' ');
-            synth.speak(msg);
-            console.log("Audio Unlocked");
-            // Hapus event listener setelah dijalankan sekali
-            document.removeEventListener('touchstart', unlockAudio);
+            synth.speak(new SpeechSynthesisUtterance(' '));
             document.removeEventListener('click', unlockAudio);
         }
-        // Jalankan unlock saat user menyentuh layar pertama kali
-        document.addEventListener('touchstart', unlockAudio);
         document.addEventListener('click', unlockAudio);
 
-        function loadVoices() {
-            voices = synth.getVoices();
-        }
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
+        function loadVoices() { voices = synth.getVoices(); }
+        if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = loadVoices;
 
         foreignLang.onchange = () => {
             const selectedText = foreignLang.options[foreignLang.selectedIndex].text;
@@ -432,15 +372,10 @@
             foreignLabel.innerText = cleanText;
         };
 
-        // Pengaturan Speech Recognition
         const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!Recognition) {
-            alert("Browser Anda tidak mendukung Speech Recognition. Gunakan Chrome atau Safari terbaru.");
-        }
-
         const recognition = new Recognition();
         recognition.interimResults = false;
-        recognition.continuous = false; // Penting untuk mobile agar tidak menggantung
+        recognition.continuous = false;
 
         let currentMode = "";
 
@@ -450,19 +385,10 @@
         function startMic(lang, mode) {
             currentMode = mode;
             recognition.lang = lang;
-
-            // Reset suara jika sedang ada yang bicara
             synth.cancel();
-
-            try {
-                recognition.start();
-            } catch (e) {
-                recognition.stop();
-            }
-
+            try { recognition.start(); } catch (e) { recognition.stop(); }
             status.innerText = "Mendengarkan...";
             statusWrapper.classList.add('is-recording');
-
             if (mode === 'id') document.getElementById('btnID').classList.add('is-recording');
             else document.getElementById('btnForeign').classList.add('is-recording');
         }
@@ -474,15 +400,7 @@
             processTranslation(transcript, sl, tl);
         };
 
-        recognition.onerror = (event) => {
-            console.error("Speech Error: ", event.error);
-            status.innerText = "Error: " + event.error;
-            stopUI();
-        };
-
-        recognition.onend = () => {
-            stopUI();
-        };
+        recognition.onend = () => stopUI();
 
         function stopUI() {
             document.querySelectorAll('.btn-mic').forEach(b => b.classList.remove('is-recording'));
@@ -490,81 +408,68 @@
             status.innerText = "Standby System";
         }
 
+        // FUNGSI BARU: Mendapatkan Transliterasi
+        function getTransliteration(text, lang) {
+            if (lang.startsWith('zh')) {
+                // Menggunakan pinyin-pro library
+                return pinyinPro.pinyin(text);
+            }
+            // Untuk Jepang/Korea, idealnya pakai API, tapi ini placeholder logika
+            // Jika ingin full Jepang, bisa tambahkan library kuroshiro.js
+            return ""; 
+        }
+
         function processTranslation(text, sl, tl) {
             status.innerText = "Menerjemahkan...";
-
-            // Menggunakan MyMemory API (Gratis & Tanpa API Key)
-            // Format langpair = sumber|target (contoh: id|zh-CN)
             const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sl}|${tl}`;
 
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.responseData) {
-                        const translatedText = data.responseData.translatedText;
-                        addBubble(text, translatedText, currentMode, tl);
-
-                        setTimeout(() => {
-                            speak(translatedText, tl);
-                        }, 300);
-                        status.innerText = "Selesai";
-                    } else {
-                        status.innerText = "Gagal menerjemahkan";
-                    }
+                    const translatedText = data.responseData.translatedText;
+                    
+                    // Cek apakah butuh transliterasi (jika target adalah Mandarin)
+                    let translit = getTransliteration(translatedText, tl);
+                    
+                    addBubble(text, translatedText, currentMode, tl, translit);
+                    speak(translatedText, tl);
+                    status.innerText = "Selesai";
                 })
                 .catch(err => {
-                    status.innerText = "Gagal koneksi API!";
-                    console.error(err);
+                    status.innerText = "Gagal koneksi!";
                 });
         }
 
-        function addBubble(orig, tran, mode, lang) {
+        function addBubble(orig, tran, mode, lang, translit = "") {
             const wrap = document.createElement('div');
             wrap.className = `msg-wrapper ${mode === 'id' ? 'msg-id' : 'msg-foreign'}`;
 
-            // Gunakan fungsi pembersih karakter agar onclick tidak rusak
             const safeTran = tran.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+            
+            // Tampilkan baris translit hanya jika ada isinya
+            const translitHtml = translit ? `<span class="text-translit">${translit}</span>` : "";
 
             wrap.innerHTML = `
-        <div class="bubble">
-            <span class="text-orig">${orig}</span>
-            <span class="text-tran">${tran}</span>
-        </div>
-        <button class="btn-replay" onclick="speak('${safeTran}', '${lang}')">
-            <span class="material-symbols-rounded" style="font-size:18px">play_arrow</span>
-        </button>
-    `;
+                <div class="bubble">
+                    <span class="text-orig">${orig}</span>
+                    <span class="text-tran">${tran}</span>
+                    ${translitHtml}
+                </div>
+                <button class="btn-replay" onclick="speak('${safeTran}', '${lang}')">
+                    <span class="material-symbols-rounded" style="font-size:18px">play_arrow</span>
+                </button>
+            `;
             chatBox.appendChild(wrap);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // FIX 3: Fungsi Speak yang lebih tangguh untuk berbagai Merk HP
         function speak(text, lang) {
-            // Batalkan suara yang sedang berjalan
             synth.cancel();
-
-            if (text.trim() === "") return;
-
             const utterance = new SpeechSynthesisUtterance(text);
-
-            // Set bahasa
             utterance.lang = lang;
-
-            // Cari suara yang paling cocok dengan bahasa target
-            // Beberapa HP (seperti Oppo/Xiaomi) butuh pemilihan voice secara eksplisit
             if (voices.length === 0) voices = synth.getVoices();
-
-            const matchedVoice = voices.find(v => v.lang.includes(lang) || v.lang.includes(lang.split('-')[0]));
-            if (matchedVoice) {
-                utterance.voice = matchedVoice;
-            }
-
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-
-            // Masalah di Android Chrome: Terkadang suara berhenti tiba-tiba
-            // Kita panggil resume setiap kali bicara
+            const matchedVoice = voices.find(v => v.lang.includes(lang));
+            if (matchedVoice) utterance.voice = matchedVoice;
             synth.resume();
             synth.speak(utterance);
         }
