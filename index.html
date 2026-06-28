@@ -386,12 +386,7 @@
             document.querySelectorAll('.btn-mic').forEach(b => b.classList.remove('is-recording'));
             statusWrapper.classList.remove('is-recording');
             status.innerText = "Standby System";
-        }
-
-        function getTransliteration(text, lang) {
-            if (lang.startsWith('zh')) return pinyinPro.pinyin(text);
-            return ""; 
-        }
+        }      
 
         // Ganti fungsi processTranslation lama dengan ini
 async function processTranslation(text, sl, tl) {
