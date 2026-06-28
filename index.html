@@ -388,47 +388,33 @@
             status.innerText = "Standby System";
         }
 
-        async function processTranslation(text, sl, tl) {
-    status.innerText = "Gemini AI sedang berpikir...";
-    
-    const API_KEY = "AQ.Ab8RN6KbW1sX4NwG8cUp58EAMBvzCaS1wvygmROHQsIlQ2-y0Q"; // Masukkan key AQ kamu di sini
-    
-    // PERHATIKAN: Kita hapus ?key= dari URL
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
-
-    try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                // PINDAHKAN KEY KE SINI
-                'x-goog-api-key': API_KEY 
-            },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: `Terjemahkan ke ${tl}: ${text}. Balas dalam JSON: {"translated": "hasil", "pronunciation": "cara baca"}` }] }]
-            })
-        });
-
-        const data = await response.json();
-        
-        if (data.error) {
-            console.error("API Error:", data.error);
-            status.innerText = "Error: " + data.error.message;
-            return;
+        function getTransliteration(text, lang) {
+            if (lang.startsWith('zh')) return pinyinPro.pinyin(text);
+            return ""; 
         }
 
-        // Lanjutkan proses AddBubble seperti biasa...
-        const aiResponse = data.candidates[0].content.parts[0].text;
-        const result = JSON.parse(aiResponse.replace(/```json|```/g, ""));
-        addBubble(text, result.translated, currentMode, (currentMode === "id" ? foreignLang.value : "id-ID"), result.pronunciation);
-        speak(result.translated, (currentMode === "id" ? foreignLang.value : "id-ID"));
-        status.innerText = "Selesai";
+        function processTranslation(text, sl, tl) {
+            status.innerText = "Menerjemahkan...";
+            // Menggunakan MyMemory API (Gratis & Cepat)
+            const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sl}|${tl}`;
 
-    } catch (err) {
-        status.innerText = "Gagal koneksi AI!";
-        console.error(err);
-    }
-}
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const translatedText = data.responseData.translatedText;
+                    const fullLangCode = (currentMode === "id" ? foreignLang.value : "id-ID");
+                    
+                    let translit = getTransliteration(translatedText, tl);
+                    
+                    addBubble(text, translatedText, currentMode, fullLangCode, translit);
+                    speak(translatedText, fullLangCode);
+                    status.innerText = "Selesai";
+                })
+                .catch(err => {
+                    status.innerText = "Gagal koneksi!";
+                    console.error(err);
+                });
+        }
 
         function addBubble(orig, tran, mode, lang, translit = "") {
             const wrap = document.createElement('div');
