@@ -391,58 +391,42 @@
         async function processTranslation(text, sl, tl) {
     status.innerText = "Gemini AI sedang berpikir...";
     
-    // 1. PASTIKAN API KEY BENAR
-    const API_KEY = "AQ.Ab8RN6JNsCRdonmwAODV1XzyTkItEKYraniwQaRbIKSpifQ4VQ"; 
-    const MODEL = "gemini-1.5-flash"; 
-
-    // Prompt yang lebih ketat agar AI tidak memberi teks basa-basi
-    const prompt = `Terjemahkan teks ini dari kode bahasa ${sl} ke ${tl}. 
-    Berikan respon HANYA dalam format JSON, dilarang memberi penjelasan apapun diluar JSON.
-    Format: {"translated": "hasil", "pronunciation": "cara baca latin"}`;
+    const API_KEY = "AQ.Ab8RN6KbW1sX4NwG8cUp58EAMBvzCaS1wvygmROHQsIlQ2-y0Q"; // Masukkan key AQ kamu di sini
+    
+    // PERHATIKAN: Kita hapus ?key= dari URL
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`, {
+        const response = await fetch(endpoint, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                // PINDAHKAN KEY KE SINI
+                'x-goog-api-key': API_KEY 
+            },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: `${prompt}\n\nTeks: ${text}` }] }]
+                contents: [{ parts: [{ text: `Terjemahkan ke ${tl}: ${text}. Balas dalam JSON: {"translated": "hasil", "pronunciation": "cara baca"}` }] }]
             })
         });
 
         const data = await response.json();
-
-        // Cek apakah ada error dari Google API-nya
-        if (data.error) {
-            console.error("Google API Error:", data.error.message);
-            status.innerText = "Error API: " + data.error.message;
-            return;
-        }
-
-        // Cek apakah respon diblokir oleh Safety Filter
-        if (!data.candidates || !data.candidates[0].content) {
-            console.error("Respon kosong/diblokir safety filter", data);
-            status.innerText = "Konten tidak didukung/diblokir.";
-            return;
-        }
-
-        let aiResponse = data.candidates[0].content.parts[0].text;
         
-        // Membersihkan karakter aneh yang sering dikirim AI
-        const jsonMatch = aiResponse.match(/\{.*\}/s); // Mengambil karakter di dalam kurung kurawal saja
-        if (jsonMatch) {
-            const result = JSON.parse(jsonMatch[0]);
-            const fullLangCode = (currentMode === "id" ? foreignLang.value : "id-ID");
-            
-            addBubble(text, result.translated, currentMode, fullLangCode, result.pronunciation);
-            speak(result.translated, fullLangCode);
-            status.innerText = "Selesai";
-        } else {
-            throw new Error("Format JSON tidak ditemukan");
+        if (data.error) {
+            console.error("API Error:", data.error);
+            status.innerText = "Error: " + data.error.message;
+            return;
         }
+
+        // Lanjutkan proses AddBubble seperti biasa...
+        const aiResponse = data.candidates[0].content.parts[0].text;
+        const result = JSON.parse(aiResponse.replace(/```json|```/g, ""));
+        addBubble(text, result.translated, currentMode, (currentMode === "id" ? foreignLang.value : "id-ID"), result.pronunciation);
+        speak(result.translated, (currentMode === "id" ? foreignLang.value : "id-ID"));
+        status.innerText = "Selesai";
 
     } catch (err) {
         status.innerText = "Gagal koneksi AI!";
-        console.error("Detail Error:", err); // Lihat detail error di Inspect > Console
+        console.error(err);
     }
 }
 
