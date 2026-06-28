@@ -388,33 +388,63 @@
             status.innerText = "Standby System";
         }
 
-        function getTransliteration(text, lang) {
-            if (lang.startsWith('zh')) return pinyinPro.pinyin(text);
-            return ""; 
+        async function processTranslation(text, sl, tl) {
+    status.innerText = "Gemini AI sedang berpikir...";
+    
+    // 1. PASTIKAN API KEY BENAR
+    const API_KEY = "AQ.Ab8RN6JNsCRdonmwAODV1XzyTkItEKYraniwQaRbIKSpifQ4VQ"; 
+    const MODEL = "gemini-1.5-flash"; 
+
+    // Prompt yang lebih ketat agar AI tidak memberi teks basa-basi
+    const prompt = `Terjemahkan teks ini dari kode bahasa ${sl} ke ${tl}. 
+    Berikan respon HANYA dalam format JSON, dilarang memberi penjelasan apapun diluar JSON.
+    Format: {"translated": "hasil", "pronunciation": "cara baca latin"}`;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: `${prompt}\n\nTeks: ${text}` }] }]
+            })
+        });
+
+        const data = await response.json();
+
+        // Cek apakah ada error dari Google API-nya
+        if (data.error) {
+            console.error("Google API Error:", data.error.message);
+            status.innerText = "Error API: " + data.error.message;
+            return;
         }
 
-        function processTranslation(text, sl, tl) {
-            status.innerText = "Menerjemahkan...";
-            // Menggunakan MyMemory API (Gratis & Cepat)
-            const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sl}|${tl}`;
-
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    const translatedText = data.responseData.translatedText;
-                    const fullLangCode = (currentMode === "id" ? foreignLang.value : "id-ID");
-                    
-                    let translit = getTransliteration(translatedText, tl);
-                    
-                    addBubble(text, translatedText, currentMode, fullLangCode, translit);
-                    speak(translatedText, fullLangCode);
-                    status.innerText = "Selesai";
-                })
-                .catch(err => {
-                    status.innerText = "Gagal koneksi!";
-                    console.error(err);
-                });
+        // Cek apakah respon diblokir oleh Safety Filter
+        if (!data.candidates || !data.candidates[0].content) {
+            console.error("Respon kosong/diblokir safety filter", data);
+            status.innerText = "Konten tidak didukung/diblokir.";
+            return;
         }
+
+        let aiResponse = data.candidates[0].content.parts[0].text;
+        
+        // Membersihkan karakter aneh yang sering dikirim AI
+        const jsonMatch = aiResponse.match(/\{.*\}/s); // Mengambil karakter di dalam kurung kurawal saja
+        if (jsonMatch) {
+            const result = JSON.parse(jsonMatch[0]);
+            const fullLangCode = (currentMode === "id" ? foreignLang.value : "id-ID");
+            
+            addBubble(text, result.translated, currentMode, fullLangCode, result.pronunciation);
+            speak(result.translated, fullLangCode);
+            status.innerText = "Selesai";
+        } else {
+            throw new Error("Format JSON tidak ditemukan");
+        }
+
+    } catch (err) {
+        status.innerText = "Gagal koneksi AI!";
+        console.error("Detail Error:", err); // Lihat detail error di Inspect > Console
+    }
+}
 
         function addBubble(orig, tran, mode, lang, translit = "") {
             const wrap = document.createElement('div');
